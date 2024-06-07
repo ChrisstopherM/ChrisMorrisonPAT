@@ -24,19 +24,11 @@ import javax.imageio.ImageIO;
 public class GamePanel extends JPanel {
 
     private MouseInputs mouseInputs;
-    private float xDelta = 100, yDelta = 100;
-    private BufferedImage img;
-    private BufferedImage[][] animations;
-    private int animationTick, animationIndex, animationSpeed = 8;
-    private int playerAction = IDLE;
-    private int playerDir = -1;
-    private boolean moving = false;
+    private Game game;
 
-    public GamePanel() {
+    public GamePanel(Game game) {
         mouseInputs = new MouseInputs(this);
-
-        importIng();
-        LoadAnimations();
+        this.game = game;
         setPanelSize();
         addKeyListener(new KeyboardInputs(this));
         addMouseListener(mouseInputs);
@@ -44,18 +36,9 @@ public class GamePanel extends JPanel {
 
     }
 
-    public void setDirection(int direction) {
-        this.playerDir = direction;
-        moving = true;
-    }
-
-    public void setMoving(Boolean moving) {
-        this.moving = moving;
-    }
-
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawImage(animations[playerAction][animationIndex], (int) xDelta, (int) yDelta, 128, 128, null);
+        game.render(g);
     }
 
     private void setPanelSize() {
@@ -65,74 +48,10 @@ public class GamePanel extends JPanel {
         setMaximumSize(size);
     }
 
-    private void importIng() {
-        InputStream is = getClass().getResourceAsStream("/blueman.png");
-        try {
-            img = ImageIO.read(is);
-        } catch (IOException e) {
-            System.err.println(e);
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                System.err.println(e);
-            }
-        }
-    }
-
-    private void LoadAnimations() {
-        animations = new BufferedImage[7][12];
-        for (int j = 0; j < animations.length; j++) {
-            for (int i = 0; i < animations[j].length; i++) {
-                animations[j][i] = img.getSubimage(i * 32, j * 32, 32, 32);
-            }
-        }
-    }
-
-    private void updateAnimation() {
-        animationTick++;
-        if (animationTick >= animationSpeed) {
-            animationTick = 0;
-            animationIndex++;
-            if (animationIndex >= GetSpriteAmount(playerAction)) {
-                animationIndex = 0;
-            }
-        }
-    }
-
-    private void setAnimation() {
-        if (moving) {
-            playerAction = RUNNING;
-        } else {
-            playerAction = IDLE;
-        }
-    }
-
-    private void updatePos() {
-        if (moving) {
-            switch (playerDir) {
-                case LEFT:
-                    xDelta -= 5;
-                    break;
-                case UP:
-                    yDelta -= 5;
-                    break;
-                case RIGHT:
-                    xDelta += 5;
-                    break;
-                case DOWN:
-                    yDelta += 5;
-                    break;
-                default:
-                    throw new AssertionError();
-            }
-        }
-    }
-
     public void updateGame() {
-        updateAnimation();
-        setAnimation();
-        updatePos();
     }
 
+    public Game getGame() {
+        return game;
+    }
 }
